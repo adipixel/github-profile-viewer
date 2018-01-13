@@ -1,18 +1,25 @@
-import React, {Component} from 'react';
-import ReactDOM from 'react-dom'
-import PropTypes from 'prop-types';
+import React from 'react';
 
+class Search extends React.Component {
+  onSubmit(e) {
+    e.preventDefault();
+    let username = this.refs.username.value.trim();
+    if (!!username) {
+      this.props.onFormSubmit(username);
+      this.refs.username.value = '';
+    }
+  }
 
-class Profile extends Component{
-  render(){
-    return(
+  render() {
+    return (
       <div>
-        {this.props.userData.name}
+        <form onSubmit={this.onSubmit.bind(this)}>
+          <label>Search GitHub Users</label>
+          <input type="text" ref="username" className="form-control"/>
+        </form>
       </div>
-
-    )
+    );
   }
 }
 
-
-export default Profile
+export default Search;
