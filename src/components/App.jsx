@@ -1,52 +1,80 @@
-import React, {Component} from 'react';
-import ReactDOM from 'react-dom'
-import PropTypes from 'prop-types';
-import Profile from './github/Profile.jsx'
+import React from 'react';
+import ReactDOM from 'react-dom';
+import Profile from './github/Profile.jsx';
+import Search from './github/Search.jsx';
 
-class App extends Component{
-  constructor(props){
+class App extends React.Component {
+  constructor(props) {
     super(props);
     this.state = {
-      username : 'adipixel',
-      userData : [],
-      userData : [],
-      perPage : 5
-    }
+      username: 'luhtonen',
+      userData: [],
+      userRepos: [],
+      perPage: 10
+    };
   }
-  // get user data from Github
-  getUserData(){
+
+  // Get user data from GitHub
+  getUserData() {
     $.ajax({
-      url: 'https://api.github.com/users/' + this.state.username + '?client_id=' + this.props.clientId + '&client_secret=' + this.props.clientSecret+'',
+      url: 'https://api.github.com/users/' + this.state.username + '?client_id=' + this.props.clientId + '&client_secret=' + this.props.clientSecret,
       dataType: 'json',
       cache: false,
-      success: function(data) {
-        this.setState({userData: data});
-        console.log(data);
-      }.bind(this),
-      error: function(xhr, status, err) {
+      success: ((data) => {
+        this.setState({
+          userData: data
+        });
+      }),
+      error: ((xhr, status, err) => {
         this.setState({username: null});
         alert(err);
-      }.bind(this)
+      })
     });
   }
 
-  componentDidMount(){
-    this.getUserData();
+  // Get user repos
+  getUserRepos() {
+    $.ajax({
+      url: 'https://api.github.com/users/' + this.state.username + '/repos?per_page=' + this.state.perPage + '&client_id=' + this.props.clientId + '&client_secret=' + this.props.clientSecret + '&sort=created',
+      dataType: 'json',
+      cache: false,
+      success: ((data) => {
+        this.setState({
+          userRepos: data
+        });
+      }),
+      error: ((xhr, status, err) => {
+        this.setState({username: null});
+        alert(err);
+      })
+    });
   }
 
-  render(){
+  handleFormSubmit(username) {
+    this.setState({username}, function () {
+      this.getUserData();
+      this.getUserRepos();
+    });
+  }
+
+  componentDidMount() {
+    this.getUserData();
+    this.getUserRepos();
+  }
+
+  render() {
     return(
       <div>
-        <Profile userData = {this.state.userData} />
+        <Search onFormSubmit={this.handleFormSubmit.bind(this)} />
+        <Profile {...this.state} />
       </div>
-
-    )
+    );
   }
 }
 
 App.propTypes = {
-  clientId: PropTypes.string,
-  clientSecret: PropTypes.string
+  clientId: React.PropTypes.string,
+  clientSecret: React.PropTypes.string
 };
 
 App.defaultProps = {
